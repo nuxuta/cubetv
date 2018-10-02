@@ -4,14 +4,16 @@ import arrow
 import threading
 import os
 import time
+import sys
+
+output = sys.argv[1]
 
 count_downloading = 0
-
 
 def download(cube_tv_id, user, stream_info):
     global count_downloading
     print(cube_tv_id)
-    lock_file = cube_tv_id + ".downloading"
+    lock_file = os.path.join(output, "%s.downloading" % cube_tv_id)
 
     try:
         # gid = response["data"]["gid"]
@@ -21,20 +23,20 @@ def download(cube_tv_id, user, stream_info):
         video_src = stream_info["data"]["video_src"]
         file_name = ("%s-%s-%s-%s" % (nick_name, game_title, cube_tv_id, arrow.now().format('YYYYMMDD_HHmmss'))) \
             .replace(":", "").replace(" ", "")
-        executable_file = os.path.join(os.getcwd(), file_name) + ".sh"
+        executable_file = os.path.join(output, file_name) + ".sh"
         f = open(executable_file, "w+")
         f.write("#!/bin/sh\n")
         f.write("PLAYLIST=%s\n" % video_src)
-        f.write("OUTPUT=%s.mp4\n" % file_name)
+        f.write("OUTPUT=%s.mp4\n" % os.path.join(output, file_name))
         f.write('ffmpeg -i "$PLAYLIST" -c copy -bsf:a aac_adtstoasc "$1"\n')
         f.close()
         subprocess.call(['chmod', '+x', executable_file])
         time.sleep(1)
-        subprocess.call([executable_file, "%s-%d.mp4" % (file_name, 1)])
+        subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 1)])
         time.sleep(1)
-        subprocess.call([executable_file, "%s-%d.mp4" % (file_name, 2)])
+        subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 2)])
         time.sleep(1)
-        subprocess.call([executable_file, "%s-%d.mp4" % (file_name, 3)])
+        subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 3)])
         # os.remove(executable_file)
         os.remove(lock_file)
         count_downloading -= 1
@@ -53,7 +55,7 @@ while True:
                 if count_downloading >= 1:
                     continue
 
-                lock_file = cube_tv_id + ".downloading"
+                lock_file = os.path.join(output, "%s.downloading" % cube_tv_id)
                 if os.path.isfile(lock_file):
                     print("another downloading process is running")
                     continue
