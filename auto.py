@@ -74,14 +74,15 @@ while True:
                 t.start()
             f.close()
         time.sleep(20)
-    except IOError as e:
+    except Exception as e:
         err_log = open("error.log", "w+")
-        err_log.write("I/O error({0}): {1}".format(e.errno, e.strerror))
+        err_log.write(e)
         err_log.close()
-    except:  # handle other exceptions such as attribute errors
+    except:
         err_log = open("error.log", "w+")
-        err_log.write("System error: {0}".format(e.errno, e.strerror))
+        err_log.write("some error")
         err_log.close()
-
+    finally:
+        print("continue")
 
 
