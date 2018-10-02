@@ -52,7 +52,7 @@ while True:
         with open("follows.csv", "r") as f:
             for line in f:
                 cube_tv_id = line.strip()
-                if count_downloading >= 1:
+                if count_downloading >= 5:
                     continue
 
                 lock_file = os.path.join(output, "%s.downloading" % cube_tv_id)

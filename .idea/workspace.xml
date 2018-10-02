@@ -48,7 +48,7 @@
           <entry key="csv" value="6" />
           <entry key="dummy" value="21" />
           <entry key="go" value="14" />
-          <entry key="py" value="1176" />
+          <entry key="py" value="1177" />
           <entry key="tpl" value="53" />
         </counts>
       </usages-collector>
@@ -56,7 +56,7 @@
         <counts>
           <entry key="Go" value="14" />
           <entry key="PLAIN_TEXT" value="80" />
-          <entry key="Python" value="1176" />
+          <entry key="Python" value="1177" />
         </counts>
       </usages-collector>
     </session>
@@ -75,8 +75,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/auto.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="58" selection-start-line="58" selection-end-line="58" />
+            <state relative-caret-position="164">
+              <caret line="54" column="41" selection-start-line="54" selection-start-column="41" selection-end-line="54" selection-end-column="41" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -343,8 +343,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/auto.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="58" selection-start-line="58" selection-end-line="58" />
+        <state relative-caret-position="164">
+          <caret line="54" column="41" selection-start-line="54" selection-start-column="41" selection-end-line="54" selection-end-column="41" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
