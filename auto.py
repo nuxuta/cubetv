@@ -14,6 +14,7 @@ def download(cube_tv_id, user, stream_info):
     global count_downloading
     print(cube_tv_id)
     lock_file = os.path.join(output, "%s.downloading" % cube_tv_id)
+    executable_file = ''
 
     try:
         # gid = response["data"]["gid"]
@@ -40,10 +41,10 @@ def download(cube_tv_id, user, stream_info):
         # os.remove(executable_file)
         os.remove(lock_file)
         count_downloading -= 1
-    except Exception as e:
-        print("type error: " + str(e))
+    except:
+        print("download error")
         os.remove(lock_file)
-        # os.remove(executable_file)
+        os.remove(executable_file)
         count_downloading -= 1
 
 
@@ -86,5 +87,6 @@ while True:
         err_log.close()
     finally:
         print("continue")
+        pass
 
 
