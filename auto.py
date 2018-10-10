@@ -46,7 +46,7 @@ def download(cube_tv_id, user, stream_info):
         os.remove(lock_file)
         os.remove(executable_file)
         count_downloading -= 1
-
+        pass
 
 while True:
     try:
