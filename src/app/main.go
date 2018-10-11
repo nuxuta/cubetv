@@ -99,7 +99,7 @@ func download(outputDir, cubeId string) (err error) {
 	json.NewDecoder(r.Body).Decode(&gameInfo)
 	code := gameInfo.GetString("code")
 	if code != "1" {
-		fmt.Println(userInfo.GetMap("data"))
+		log.Println(cubeId, gameInfo.GetMap("data"))
 		return nil
 	}
 
