@@ -9,6 +9,10 @@ func (r Map) GetString(key string) string {
 	return fmt.Sprintf("%v", r[key])
 }
 
+func (r Map) GetInt(key string) int {
+	return int(r[key].(float64))
+}
+
 func (r Map) GetMap(key string) Map {
 	return Map(r[key].(map[string]interface{}))
 }
@@ -23,6 +27,14 @@ func (r Arr) ToArrMap() []Map {
 		arrMap[k] = Map(v.(map[string]interface{}))
 	}
 	return arrMap
+}
+
+func (r Arr) ToArrStr() []string {
+	arrStr := make([]string, len(r))
+	for k, v := range r {
+		arrStr[k] = v.(string)
+	}
+	return arrStr
 }
 
 //func (r Map) GetArr(key string) []Map {

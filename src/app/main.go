@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"libs"
 	"log"
 	"net/http"
@@ -23,35 +23,39 @@ var total = 0
 func main() {
 	outputDir := os.Args[1]
 	fmt.Println(outputDir)
-
 	for {
-
-		file, err := os.Open("./follows.csv")
-		if err != nil {
-			panicOnError(err)
-		}
-
-		reader := bufio.NewReader(file)
-		scanner := bufio.NewScanner(reader)
-
-		for scanner.Scan() {
-			cubeId := scanner.Text()
-			if total > 5 {
-				log.Println("There are 5 threads of downloading already")
-				break
-			}
-
-			if isLocked(outputDir, cubeId) {
-				log.Println("Already downloading")
-				continue
-			}
-
-			download(outputDir, cubeId)
-		}
-
-		file.Close()
-		time.Sleep(60 * time.Second)
+		loop(outputDir)
 	}
+}
+
+func loop(outputDir string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+			log.Println(err)
+		}
+	}()
+	jsonFile, err := os.Open("config.json")
+	panicOnError(err)
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	panicOnError(err)
+	var config libs.Map
+	json.Unmarshal(byteValue, &config)
+	jsonFile.Close()
+	for _, cubeId := range config.GetArr("follows").ToArrStr() {
+		if total >= config.GetInt("limit") {
+			log.Printf("Limited %s\n", config.GetString("limit"))
+			break
+		}
+		if isLocked(outputDir, cubeId) {
+			log.Println("Already downloading")
+			continue
+		}
+		download(outputDir, cubeId)
+	}
+
+	time.Sleep(time.Duration(config.GetInt("delay")) * time.Second)
+	return err
 }
 
 func createLockFile(dir, cubeId string) {
@@ -123,7 +127,7 @@ func download(outputDir, cubeId string) (err error) {
 		cmd.Stderr = os.Stdout
 		cmd.Stdin = os.Stdin
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
 		if err := cmd.Run(); err != nil {
 			log.Println("retrying")
 			time.Sleep(1 * time.Second)
