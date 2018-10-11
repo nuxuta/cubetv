@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"libs"
 	"log"
 	"net/http"
@@ -25,19 +25,22 @@ func main() {
 	fmt.Println(outputDir)
 
 	for {
-		jsonFile, err := os.Open("follows.json")
-		panicOnError(err)
-		byteValue, err := ioutil.ReadAll(jsonFile)
-		panicOnError(err)
-		var follow libs.Map
-		json.Unmarshal(byteValue, &follow)
-		jsonFile.Close()
-		for _, v := range follow.GetMap("data").GetArr("list").ToArrMap() {
+
+		file, err := os.Open("./follows.csv")
+		if err != nil {
+			panicOnError(err)
+		}
+
+		reader := bufio.NewReader(file)
+		scanner := bufio.NewScanner(reader)
+
+		for scanner.Scan() {
+			cubeId := scanner.Text()
 			if total > 5 {
 				log.Println("There are 5 threads of downloading already")
 				break
 			}
-			cubeId := v.GetString("cube_id")
+
 			if isLocked(outputDir, cubeId) {
 				log.Println("Already downloading")
 				continue
@@ -46,8 +49,8 @@ func main() {
 			download(outputDir, cubeId)
 		}
 
+		file.Close()
 		time.Sleep(60 * time.Second)
-
 	}
 }
 
