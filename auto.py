@@ -34,11 +34,6 @@ def download(cube_tv_id, user, stream_info):
         subprocess.call(['chmod', '+x', executable_file])
         time.sleep(1)
         subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 1)])
-        time.sleep(1)
-        subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 2)])
-        time.sleep(1)
-        subprocess.call([executable_file, "%s-%d.mp4" % (os.path.join(output, file_name), 3)])
-        # os.remove(executable_file)
         os.remove(lock_file)
         count_downloading -= 1
     except:
