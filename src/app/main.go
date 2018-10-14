@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -42,16 +43,21 @@ func loop(outputDir string) (err error) {
 	var config libs.Map
 	json.Unmarshal(byteValue, &config)
 	jsonFile.Close()
+	subFolder := config.GetString("subFolder")
+
+	filePath := filepath.Join(outputDir, subFolder, time.Now().Format("2006-01-02_150000"))
+	os.MkdirAll(filePath, os.ModePerm)
+
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
 		if total >= config.GetInt("limit") {
 			log.Printf("Limited %s\n", config.GetString("limit"))
 			break
 		}
-		if isLocked(outputDir, cubeId) {
+		if isLocked(filePath, cubeId) {
 			log.Println("Already downloading")
 			continue
 		}
-		download(outputDir, cubeId)
+		download(filePath, cubeId)
 	}
 
 	time.Sleep(time.Duration(config.GetInt("delay")) * time.Second)

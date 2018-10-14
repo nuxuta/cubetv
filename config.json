@@ -1,6 +1,7 @@
 {
   "limit": 5,
   "delay": 60,
+  "subFolder": "default",
   "follows": [
     "22552471",
     "Kua9559",
@@ -14,7 +15,9 @@
     "15608532",
     "20341066",
     "Ermename",
+    "22633395",
     "Hoanghuyenit",
+    "Pebo7",
     "Luna",
     "18860536",
     "16696047",
