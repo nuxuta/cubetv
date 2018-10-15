@@ -135,11 +135,7 @@ func download(outputDir, cubeId string) (err error) {
 
 		time.Sleep(5 * time.Second)
 		if err := cmd.Run(); err != nil {
-			log.Println("retrying")
-			time.Sleep(1 * time.Second)
-			if err := cmd.Run(); err != nil {
-				return err
-			}
+			return err
 		}
 		return nil
 	}()
