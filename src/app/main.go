@@ -46,8 +46,8 @@ func loop(outputDir string) (err error) {
 	subFolder := config.GetString("subFolder")
 
 	rootDir := filepath.Join(outputDir, subFolder)
+	os.MkdirAll(rootDir, os.ModePerm)
 	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02_150000"))
-	os.MkdirAll(outputFolder, os.ModePerm)
 
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
 		if total >= config.GetInt("limit") {
@@ -112,6 +112,7 @@ func download(rootDir, outputDir, cubeId string) (err error) {
 
 	log.Println("Started downloading " + cubeId)
 	createLockFile(rootDir, cubeId)
+	os.MkdirAll(outputDir, os.ModePerm)
 	total++
 	go func() error {
 		defer func() {
