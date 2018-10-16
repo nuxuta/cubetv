@@ -126,7 +126,7 @@ func download(rootDir, outputDir, cubeId string) (err error) {
 		videoSrc := gameInfo.GetMap("data").GetString("video_src")
 
 		output := fmt.Sprintf(
-			"%s/%s-%s-%s-%s.mp4",
+			"%s/%s-%s-%s-%s.mkv",
 			outputDir,
 			nickName, gameTitle, cubeId, time.Now().Format("2006-01-02_150405"))
 
