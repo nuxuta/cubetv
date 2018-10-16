@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 )
 
@@ -136,6 +137,12 @@ func download(rootDir, outputDir, cubeId string) (err error) {
 		cmd.Stdin = os.Stdin
 
 		time.Sleep(5 * time.Second)
+
+		go func() {
+			time.Sleep(60 * 60 * time.Second)
+			cmd.Process.Signal(syscall.SIGINT)
+		}()
+
 		if err := cmd.Run(); err != nil {
 			return err
 		}
