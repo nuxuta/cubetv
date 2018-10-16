@@ -45,19 +45,20 @@ func loop(outputDir string) (err error) {
 	jsonFile.Close()
 	subFolder := config.GetString("subFolder")
 
-	filePath := filepath.Join(outputDir, subFolder, time.Now().Format("2006-01-02_150000"))
-	os.MkdirAll(filePath, os.ModePerm)
+	rootDir := filepath.Join(outputDir, subFolder)
+	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02_150000"))
+	os.MkdirAll(outputFolder, os.ModePerm)
 
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
 		if total >= config.GetInt("limit") {
 			log.Printf("Limited %s\n", config.GetString("limit"))
 			break
 		}
-		if isLocked(filePath, cubeId) {
+		if isLocked(rootDir, cubeId) {
 			log.Println("Already downloading")
 			continue
 		}
-		download(filePath, cubeId)
+		download(rootDir, outputFolder, cubeId)
 	}
 
 	time.Sleep(time.Duration(config.GetInt("delay")) * time.Second)
@@ -85,7 +86,7 @@ func removeLockFile(dir, cubeId string) {
 	panicOnError(err)
 }
 
-func download(outputDir, cubeId string) (err error) {
+func download(rootDir, outputDir, cubeId string) (err error) {
 	r, err := http.Get("https://www.cubetv.sg/studio/info?cube_id=" + cubeId)
 	if err != nil {
 		return err
@@ -110,7 +111,7 @@ func download(outputDir, cubeId string) (err error) {
 	}
 
 	log.Println("Started downloading " + cubeId)
-	createLockFile(outputDir, cubeId)
+	createLockFile(rootDir, cubeId)
 	total++
 	go func() error {
 		defer func() {
@@ -118,7 +119,7 @@ func download(outputDir, cubeId string) (err error) {
 				err = fmt.Errorf("panic: %v", r)
 			}
 			total--
-			removeLockFile(outputDir, cubeId)
+			removeLockFile(rootDir, cubeId)
 			log.Println("Finished downloading " + cubeId)
 		}()
 		videoSrc := gameInfo.GetMap("data").GetString("video_src")
