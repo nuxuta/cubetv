@@ -46,7 +46,7 @@ func loop(outputDir string) (err error) {
 	jsonFile.Close()
 	subFolder := config.GetString("subFolder")
 
-	rootDir := filepath.Join(outputDir, subFolder)
+	rootDir := filepath.Join(outputDir, subFolder, time.Now().Format("2006-01-02"))
 	os.MkdirAll(rootDir, os.ModePerm)
 	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02_150000"))
 
