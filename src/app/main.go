@@ -46,9 +46,9 @@ func loop(outputDir string) (err error) {
 	jsonFile.Close()
 	subFolder := config.GetString("subFolder")
 
-	rootDir := filepath.Join(outputDir, subFolder, time.Now().Format("2006-01-02"))
+	rootDir := filepath.Join(outputDir, subFolder)
 	os.MkdirAll(rootDir, os.ModePerm)
-	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02_150000"))
+	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02"))
 
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
 		if total >= config.GetInt("limit") {
