@@ -22,22 +22,40 @@ func panicOnError(err error) {
 
 var total = 0
 
+type Process struct {
+	startTime time.Time
+	cmd       *exec.Cmd
+}
+
+type StreamInfo struct {
+	CubeId    string
+	VideoSrc  string
+	GameTitle string
+	NickName  string
+}
+
+var processesMap = make([]Process, 0, 10)
+
 func main() {
-	outputDir := os.Args[1]
-	fmt.Println(outputDir)
+	configFile := os.Args[1]
+	outputDir := os.Args[2]
 	for {
-		loop(outputDir)
+		err := loop(configFile, outputDir)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func loop(outputDir string) (err error) {
+func loop(configFile, outputDir string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
-			log.Println(err)
+			err = r.(error)
+			//panic(r)
+			return
 		}
 	}()
-	jsonFile, err := os.Open("config.json")
+	jsonFile, err := os.Open(configFile)
 	panicOnError(err)
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	panicOnError(err)
@@ -51,7 +69,6 @@ func loop(outputDir string) (err error) {
 	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02"))
 
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
-		log.Println("Processing", cubeId)
 		if total >= config.GetInt("limit") {
 			log.Printf("Limited %s\n", config.GetString("limit"))
 			break
@@ -60,7 +77,36 @@ func loop(outputDir string) (err error) {
 			log.Println("Already downloading")
 			continue
 		}
-		download(rootDir, outputFolder, cubeId)
+		streamInfo, err := getStreamInfo(cubeId)
+		if err != nil {
+			return err
+		}
+		if streamInfo == nil {
+			continue
+		}
+		download(rootDir, outputFolder, streamInfo)
+	}
+
+	time.Sleep(30 * time.Second)
+
+	for _, cubeId := range config.GetArr("prefer").ToArrStr() {
+		if isLocked(rootDir, cubeId) {
+			log.Println("Already downloading")
+			continue
+		}
+		streamInfo, err := getStreamInfo(cubeId)
+		if err != nil {
+			return err
+		}
+		if streamInfo == nil {
+			continue
+		}
+		if total >= config.GetInt("limit") && len(processesMap) > 0 {
+			process := processesMap[0]
+			process.cmd.Process.Signal(syscall.SIGINT)
+			processesMap = processesMap[1:]
+		}
+		download(rootDir, outputFolder, streamInfo)
 	}
 
 	time.Sleep(time.Duration(config.GetInt("delay")) * time.Second)
@@ -88,10 +134,10 @@ func removeLockFile(dir, cubeId string) {
 	panicOnError(err)
 }
 
-func download(rootDir, outputDir, cubeId string) (err error) {
+func getStreamInfo(cubeId string) (streamInfo *StreamInfo, err error) {
 	r, err := http.Get("https://www.cubetv.sg/studio/info?cube_id=" + cubeId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer r.Body.Close()
 
@@ -109,12 +155,41 @@ func download(rootDir, outputDir, cubeId string) (err error) {
 	code := gameInfo.GetString("code")
 	if code != "1" {
 		log.Println(cubeId, gameInfo)
-		return nil
+		return nil, nil
 	}
+	videoSrc := gameInfo.GetMap("data").GetString("video_src")
 
-	log.Println("Started downloading " + cubeId)
-	createLockFile(rootDir, cubeId)
+	return &StreamInfo{
+		CubeId:    cubeId,
+		GameTitle: gameTitle,
+		NickName:  nickName,
+		VideoSrc:  videoSrc,
+	}, nil
+}
+
+func download(rootDir string, outputDir string, streamInfo *StreamInfo) (err error) {
+	log.Println("Started downloading " + streamInfo.CubeId)
+	createLockFile(rootDir, streamInfo.CubeId)
 	os.MkdirAll(outputDir, os.ModePerm)
+	videoSrc := streamInfo.VideoSrc
+
+	output := fmt.Sprintf(
+		"%s/%s-%s-%s-%s.mp4",
+		outputDir,
+		streamInfo.NickName,
+		streamInfo.GameTitle,
+		streamInfo.CubeId,
+		time.Now().Format("2006-01-02_150405"),
+	)
+
+	cmd := exec.Command("ffmpeg", "-i", videoSrc, "-c", "copy", output)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stdout
+	cmd.Stdin = os.Stdin
+	processesMap = append(processesMap, Process{
+		cmd:       cmd,
+		startTime: time.Now(),
+	})
 	total++
 	go func() error {
 		defer func() {
@@ -122,23 +197,11 @@ func download(rootDir, outputDir, cubeId string) (err error) {
 				err = fmt.Errorf("panic: %v", r)
 			}
 			total--
-			removeLockFile(rootDir, cubeId)
-			log.Println("Finished downloading " + cubeId)
+			removeLockFile(rootDir, streamInfo.CubeId)
+			log.Println("Finished downloading " + streamInfo.CubeId)
 		}()
-		videoSrc := gameInfo.GetMap("data").GetString("video_src")
-
-		output := fmt.Sprintf(
-			"%s/%s-%s-%s-%s.mp4",
-			outputDir,
-			nickName, gameTitle, cubeId, time.Now().Format("2006-01-02_150405"))
-
-		cmd := exec.Command("ffmpeg", "-i", videoSrc, "-c", "copy", output)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stdout
-		cmd.Stdin = os.Stdin
 
 		time.Sleep(5 * time.Second)
-
 		go func() {
 			time.Sleep(60 * 60 * time.Second)
 			cmd.Process.Signal(syscall.SIGINT)

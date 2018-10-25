@@ -1,11 +1,12 @@
 {
-  "limit": 6,
+  "limit": 1,
   "delay": 30,
   "subFolder": "default7",
+  "prefer": [
+    "ungholive"
+  ],
   "follows": [
     "20334450",
-    "Kua9559",
-    "ungholive",
     "14525884",
     "AlineFaria",
     "suzzii",
@@ -31,6 +32,7 @@
     "22533905",
     "20247862",
     "QGQTV",
-    "14525209"
+    "14525209",
+    "Kua9559"
   ]
 }
