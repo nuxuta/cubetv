@@ -51,6 +51,7 @@ func loop(outputDir string) (err error) {
 	outputFolder := filepath.Join(rootDir, time.Now().Format("2006-01-02"))
 
 	for _, cubeId := range config.GetArr("follows").ToArrStr() {
+		log.Println("Processing", cubeId)
 		if total >= config.GetInt("limit") {
 			log.Printf("Limited %s\n", config.GetString("limit"))
 			break
