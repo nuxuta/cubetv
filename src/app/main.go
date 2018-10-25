@@ -87,8 +87,6 @@ func loop(configFile, outputDir string) (err error) {
 		download(rootDir, outputFolder, streamInfo)
 	}
 
-	time.Sleep(30 * time.Second)
-
 	for _, cubeId := range config.GetArr("prefer").ToArrStr() {
 		if isLocked(rootDir, cubeId) {
 			log.Println("Already downloading")
